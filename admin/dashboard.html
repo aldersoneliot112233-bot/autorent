@@ -96,12 +96,24 @@
       document.getElementById("total-clientes").textContent = usuarios.length;
 
       // Calcular ingresos hoy
-      const hoy = new Date().toISOString().split('T')[0]; // Fecha actual (YYYY-MM-DD)
-      const ingresosHoy = reservas
-        .filter(r => r.estado === "Confirmada" && r.fechaInicio <= hoy && r.fechaFin >= hoy)
-        .reduce((acc, r) => acc + (r.total || 0), 0);
+      const hoy = new Date();
+hoy.setHours(0,0,0,0);
 
-      document.getElementById("ingresos-hoy").textContent = ingresosHoy.toFixed(2);
+const ingresosHoy = reservas
+  .filter(r => r.estado === "Confirmada")
+  .filter(r => {
+    const inicio = new Date(r.fechaInicio);
+    const fin = new Date(r.fechaFin);
+
+    inicio.setHours(0,0,0,0);
+    fin.setHours(0,0,0,0);
+
+    return inicio <= hoy && hoy <= fin;
+  })
+  .reduce((acc, r) => acc + (r.total || 0), 0);
+
+document.getElementById("ingresos-hoy").textContent = ingresosHoy.toFixed(2);
+
 
       // Mostrar últimas 5 reservas
       const tbody = document.getElementById("tabla-recientes").querySelector("tbody");

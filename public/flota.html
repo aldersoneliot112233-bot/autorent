@@ -16,8 +16,20 @@
     <h1>Nuestra Flota de Vehículos</h1>
     <p>Elige el auto ideal para tu viaje. Todos nuestros vehículos están en perfecto estado y listos para alquiler.</p>
 
+    <!-- Barra de búsqueda -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar por modelo o tipo (ej: SUV, Corolla, Honda...)" />
+      <button id="clearSearch">✖</button>
+    </div>
+
+    <!-- Contenedor de autos -->
     <div class="cars-grid" id="carsGrid">
       <!-- Se llena con JavaScript -->
+    </div>
+
+    <!-- Mensaje si no hay resultados -->
+    <div id="noResults" class="no-results" style="display: none;">
+      <p>No se encontraron autos con ese criterio de búsqueda.</p>
     </div>
   </main>
 
@@ -27,58 +39,96 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const grid = document.getElementById("carsGrid");
-      let autos = JSON.parse(localStorage.getItem("autos")) || [
-  { id: 1, modelo: "Toyota Corolla", tipo: "Sedán - 5 pasajeros", precio: 120, img: "toyota-corolla.jpg", disponible: true },
-  { id: 2, modelo: "Jeep Renegade", tipo: "SUV - 5 pasajeros", precio: 180, img: "jeep-renegade.jpg", disponible: true },
-  { id: 3, modelo: "Honda CR-V", tipo: "SUV Grande - 7 pasajeros", precio: 200, img: "honda-crv.jpg", disponible: true },
-  { id: 4, modelo: "Mazda CX-5", tipo: "SUV - 5 pasajeros", precio: 175, img: "mazda-cx5.jpg", disponible: true },
-  { id: 5, modelo: "Hyundai Accent", tipo: "Sedán - 5 pasajeros", precio: 110, img: "hyundai-accent.jpg", disponible: true },
-  { id: 6, modelo: "Kia Rio", tipo: "Hatchback - 5 pasajeros", precio: 115, img: "kia-rio.jpg", disponible: true },
-  { id: 7, modelo: "Nissan Kicks", tipo: "SUV - 5 pasajeros", precio: 160, img: "nissan-kicks.jpg", disponible: true },
-  { id: 8, modelo: "Ford Escape", tipo: "SUV - 5 pasajeros", precio: 190, img: "ford-escape.jpg", disponible: true },
-  { id: 9, modelo: "Chevrolet Tracker", tipo: "SUV Compacta - 5 pasajeros", precio: 155, img: "chevrolet-tracker.jpg", disponible: true },
-  { id: 10, modelo: "Volkswagen Jetta", tipo: "Sedán - 5 pasajeros", precio: 150, img: "volkswagen-jetta.jpg", disponible: true },
-  { id: 11, modelo: "Subaru Outback", tipo: "SUV - 5 pasajeros", precio: 210, img: "subaru-outback.jpg", disponible: true },
-  { id: 12, modelo: "Toyota RAV4", tipo: "SUV - 5 pasajeros", precio: 205, img: "toyota-rav4.jpg", disponible: true },
-  { id: 13, modelo: "Mitsubishi L200", tipo: "Pickup - 5 pasajeros", precio: 220, img: "mitsubishi-l200.jpg", disponible: true },
-  { id: 14, modelo: "Nissan Frontier", tipo: "Pickup - 5 pasajeros", precio: 230, img: "nissan-frontier.jpg", disponible: true },
-  { id: 15, modelo: "Suzuki Swift", tipo: "Hatchback - 5 pasajeros", precio: 130, img: "suzuki-swift.jpg", disponible: true }
-];
+      const searchInput = document.getElementById("searchInput");
+      const clearSearch = document.getElementById("clearSearch");
+      const noResults = document.getElementById("noResults");
 
+      // Cargar autos desde localStorage o usar datos iniciales
+      let autos = JSON.parse(localStorage.getItem("autos")) || [
+        { id: 1, modelo: "Toyota Corolla", tipo: "Sedán - 5 pasajeros", precio: 120, img: "toyota-corolla.jpg", disponible: true },
+        { id: 2, modelo: "Jeep Renegade", tipo: "SUV - 5 pasajeros", precio: 180, img: "jeep-renegade.jpg", disponible: true },
+        { id: 3, modelo: "Honda CR-V", tipo: "SUV Grande - 7 pasajeros", precio: 200, img: "honda-crv.jpg", disponible: true },
+        { id: 4, modelo: "Mazda CX-5", tipo: "SUV Mediano", precio: 190, img: "mazda-cx5.jpg", disponible: true },
+        { id: 5, modelo: "Hyundai Accent", tipo: "Sedán Económico", precio: 100, img: "hyundai-accent.jpg", disponible: true },
+        { id: 6, modelo: "Kia Rio", tipo: "Hatchback", precio: 110, img: "kia-rio.jpg", disponible: true },
+        { id: 7, modelo: "Nissan Kicks", tipo: "SUV Compacto", precio: 170, img: "nissan-kicks.jpg", disponible: true },
+        { id: 8, modelo: "Ford Escape", tipo: "SUV Familiar", precio: 210, img: "ford-escape.jpg", disponible: true },
+        { id: 9, modelo: "Chevrolet Tracker", tipo: "SUV Bajo", precio: 160, img: "chevrolet-tracker.jpg", disponible: true },
+        { id: 10, modelo: "Volkswagen Jetta", tipo: "Sedán Deportivo", precio: 190, img: "vw-jetta.jpg", disponible: true },
+        { id: 11, modelo: "Subaru Outback", tipo: "Wagon 4x4", precio: 220, img: "subaru-outback.jpg", disponible: true },
+        { id: 12, modelo: "Toyota RAV4", tipo: "SUV Mediano", precio: 200, img: "toyota-rav4.jpg", disponible: true },
+        { id: 13, modelo: "Mitsubishi L200", tipo: "Camioneta 4x4", precio: 240, img: "mitsubishi-l200.jpg", disponible: true },
+        { id: 14, modelo: "Nissan Frontier", tipo: "Pickup", precio: 230, img: "nissan-frontier.jpg", disponible: true },
+        { id: 15, modelo: "Suzuki Swift", tipo: "Hatchback Pequeño", precio: 90, img: "suzuki-swift.jpg", disponible: true }
+      ];
 
       // Guardar si es la primera vez
       if (!localStorage.getItem("autos")) {
         localStorage.setItem("autos", JSON.stringify(autos));
       }
 
-      // Mostrar autos
-      autos.forEach(auto => {
-  if (auto.disponible) {
-    const div = document.createElement("article");
-    div.className = "car-card";
-    div.innerHTML = `
-      <img 
-        src="${auto.img.startsWith('data') ? auto.img : '../assets/img/autos/' + auto.img}" 
-        alt="${auto.modelo}" 
-      />
-      <div class="car-info">
-        <h3>${auto.modelo}</h3>
-        <p class="type">${auto.tipo}</p>
-        <p class="price">S/ ${auto.precio} <span>/día</span></p>
-        <ul class="features">
-          <li>Gasolina</li>
-          <li>Manual / Automático</li>
-          <li>Aire acondicionado</li>
-        </ul>
-        <a href="vehiculo.html" class="btn btn-primary" onclick="seleccionarAuto(${auto.id})">Reservar Ahora</a>
-      </div>
-    `;
-    grid.appendChild(div);
-  }
-});
+      // Mostrar todos los autos
+      function mostrarAutos(autosFiltrados) {
+        grid.innerHTML = "";
+        noResults.style.display = "none";
 
+        if (autosFiltrados.length === 0) {
+          noResults.style.display = "block";
+          return;
+        }
+
+        autosFiltrados.forEach(auto => {
+          if (auto.disponible) {
+            const div = document.createElement("article");
+            div.className = "car-card";
+            div.innerHTML = `
+              <img src="../assets/img/autos/${auto.img}" alt="${auto.modelo}" />
+              <div class="car-info">
+                <h3>${auto.modelo}</h3>
+                <p class="type">${auto.tipo}</p>
+                <p class="price">S/ ${auto.precio} <span>/día</span></p>
+                <ul class="features">
+                  <li> Gasolina</li>
+                  <li> manual/automático</li>
+                  <li> Aire acondicionado</li>
+                </ul>
+                <a href="vehiculo.html" class="btn btn-primary" onclick="seleccionarAuto(${auto.id})">Reservar Ahora</a>
+              </div>
+            `;
+            grid.appendChild(div);
+          }
+        });
+      }
+
+      // Función para filtrar autos
+      function filtrarAutos() {
+        const term = searchInput.value.toLowerCase().trim();
+        if (term === "") {
+          mostrarAutos(autos.filter(a => a.disponible));
+          return;
+        }
+
+        const filtrados = autos.filter(auto =>
+          auto.disponible &&
+          (auto.modelo.toLowerCase().includes(term) ||
+           auto.tipo.toLowerCase().includes(term))
+        );
+
+        mostrarAutos(filtrados);
+      }
+
+      // Eventos
+      searchInput.addEventListener("input", filtrarAutos);
+      clearSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        mostrarAutos(autos.filter(a => a.disponible));
+      });
+
+      // Inicializar
+      mostrarAutos(autos.filter(a => a.disponible));
     });
 
+    // Función para seleccionar auto
     function seleccionarAuto(id) {
       const autos = JSON.parse(localStorage.getItem("autos"));
       const auto = autos.find(a => a.id === id);
